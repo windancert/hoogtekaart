@@ -1,0 +1,25 @@
+<feed xmlns='http://www.w3.org/2005/Atom' xmlns:georss='http://www.georss.org/georss'>
+  <id>http://geodata.nationaalgeoregister.nl/ahn1/atom/ahn1_100m.xml</id>
+  <title type='text' xml:lang='nl'>Download Service van Actueel hoogtebestand Nederland 100m (AHN1)</title>
+  <subtitle type='text' xml:lang='nl'>Voorgedefinieerde dataset download service</subtitle>
+  <link href='http://geodata.nationaalgeoregister.nl/ahn1/atom/ahn1_100m.xml' rel='self' type='application/xml' title='Dataset Feed' hreflang='nl' />
+  <link href='http://www.nationaalgeoregister.nl/geonetwork/srv/dut/xml.metadata.get?uuid=00b0a2bf-57ce-44c9-b94c-f6c9a41f5c61' rel='describedby' type='application/xml' />
+  <link href='http://geodata.nationaalgeoregister.nl/atom/index.xml' rel='up' type='application/xml' title='Top Atom Download Service Feed' hreflang='nl' />
+  <author>
+    <name>Servicedesk Data</name>
+    <email>servicedesk-data@rws.nl</email>
+  </author>
+  <rights>http://creativecommons.org/publicdomain/zero/1.0/deed.nl</rights>
+  <updated>2012-06-12T00:00:00.000Z</updated>
+  <entry>
+    <id>ahn1_100.tif.zip</id>
+    <title type='text' xml:lang='nl'>Download Service van Actueel hoogtebestand Nederland 100m (AHN1) ahn1_100.tif.zip</title>
+    <content type='text'>Downloadgrootte: 5,9 MB</content>
+    <updated>2012-06-12T00:00:00.000Z</updated>
+    <link href='http://geodata.nationaalgeoregister.nl/ahn1/extract/ahn1_100m/ahn1_100.tif.zip' rel='alternate' type='application/x-compressed' hreflang='nl' length='6146554' />
+    <link href='http://geodata.nationaalgeoregister.nl/ahn1/extract/ahn1_100m/ahn1_100.tif.zip' hreflang='nl' />
+    <rights>http://creativecommons.org/publicdomain/zero/1.0/deed.nl</rights>
+    <category term='http://www.opengis.net/def/crs/EPSG/0/28992' label='Amersfoort / RD New' />
+    <georss:polygon>50.6 3.1 50.6 7.3 53.7 7.3 53.7 3.1 50.6 3.1</georss:polygon>
+  </entry>
+</feed>
