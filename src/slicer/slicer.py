@@ -29,6 +29,6 @@ class Slicer:
 
     def __post_process(self, image):
         array = numpy.array(image)
-        float_array = array.astype(numpy.float32)
+        float_array = array.astype(numpy.float64)
         float_array[float_array == float_array.min()] = numpy.nan
         return float_array

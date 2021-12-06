@@ -3,6 +3,7 @@ import unittest
 
 import context
 from slicer.slicer import Slicer
+import json
 
 class SlicerTeset(unittest.TestCase):
 #     def test_slicer(self):
@@ -42,6 +43,29 @@ class SlicerTeset(unittest.TestCase):
         #     pc.set_facecolor('w')
         #     pc.set_edgecolor('w') 
         #     ax.add_collection3d(pc) 
+            
+        slices = s.generate_slices(50)
+        x_values, y_values, z_values = zip(*slices[0])
+        print(x_values[0])
+        print(y_values[0])
+        print(z_values[0])
+
+        my_data = []
+        for slice in s.generate_slices(50):
+            x_values, y_values, z_values = zip(*slice)
+            my_out_slice = []
+            for i in range(0, len(x_values)):
+                x = x_values[i]
+                y = y_values[i] 
+                z = z_values[i]
+                X = [x,y,z]
+                my_out_slice.append(X)
+            my_data.append(my_out_slice)
+
+        with open('hoogtekaart.json', 'w') as f:
+            json.dump(my_data, f, indent=2)
+            
+
             
 
         for slice in s.generate_slices(50):
