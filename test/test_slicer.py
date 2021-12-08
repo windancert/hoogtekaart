@@ -1,5 +1,7 @@
 import math
 import unittest
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 import context
 from slicer.slicer import Slicer
@@ -23,8 +25,6 @@ class SlicerTeset(unittest.TestCase):
     def test_slicer_3d(self):
         s = Slicer(r"../data/ahn_100.tif")
 
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
         # f = plt.figure()
         # ax = f.add_subplot(111)
@@ -44,14 +44,10 @@ class SlicerTeset(unittest.TestCase):
         #     pc.set_edgecolor('w') 
         #     ax.add_collection3d(pc) 
             
-        slices = s.generate_slices(50)
-        x_values, y_values, z_values = zip(*slices[0])
-        print(x_values[0])
-        print(y_values[0])
-        print(z_values[0])
+        no_slices = 15
 
         my_data = []
-        for slice in s.generate_slices(50):
+        for slice in s.generate_slices(no_slices):
             x_values, y_values, z_values = zip(*slice)
             my_out_slice = []
             for i in range(0, len(x_values)):
@@ -68,10 +64,18 @@ class SlicerTeset(unittest.TestCase):
 
             
 
-        for slice in s.generate_slices(50):
+        for slice in s.generate_slices(no_slices):
             x_values, y_values, z_values = zip(*slice)
             ax.plot(x_values, y_values, zs=[_compress_z(z) for z in z_values], color='b')
         
+        plt.show(block=True)
+
+    def test_show_map(self):
+        s = Slicer(r"../data/ahn_100.tif")
+        f = plt.figure()
+        ax = f.add_subplot(111)
+        ax.set_axis_off()
+        ax.imshow(s.data)
         plt.show(block=True)
 
 def _compress_z(z):

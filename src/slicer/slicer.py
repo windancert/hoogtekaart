@@ -24,8 +24,11 @@ class Slicer:
 
     def __generate_data_slices(self, pitch):
         N = self.__data.shape[0]
-        for i in range(0, N, pitch):
-            yield N-i, self.__data[i, :]
+        hp = pitch // 2
+        for i in range(hp, N-hp, pitch):
+            thick_slice = self.__data[i-hp:i+hp, :]
+            thin_slice = numpy.nanmean(thick_slice, axis=0)
+            yield N-i, thin_slice
 
     def __post_process(self, image):
         array = numpy.array(image)
