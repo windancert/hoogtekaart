@@ -3,7 +3,11 @@ import requests
 import json
 import numpy as np
 import pandas
-
+from country_bounding_boxes import (
+      country_subunits_containing_point,
+      country_subunits_by_iso_code
+    )
+import pycountry
 
 # BOUNDING BOXES
 # https://data.humdata.org/dataset/bounding-boxes-for-countries
@@ -16,7 +20,7 @@ import pandas
 
 def get_location_data(lat, lon):
     result = {'lat' : lat, 'lon' : lon }
-    height_data_get_string = f'https://api.open-elevation.com/api/v1/lookup?locations={lat},{lon}'
+    height_data_get_string = f'https://api.open-elevation.com/api/v1/lookup?locations={lat:.5},{lon:.5}'
     # print(height_data_get_string)
     height_data_json = requests.get(height_data_get_string)
     # print(height_data_json.status_code)
@@ -58,36 +62,75 @@ def get_location_data(lat, lon):
 
 def get_country_bounds(country):
 
-    # reading the CSV file
+    # # reading the CSV file
     country_bound_df = pandas.read_csv('data/country-boundingboxes.csv')
-    
-    # displaying the contents of the CSV file
-#     print(country_bound_df)
-
-
-    # bounds = country_bound_df.loc[country_bound_df['country'] == country, ["longmin", "latmin", "longmax" , "latmax"]].values[0]
     bounds = country_bound_df.loc[country_bound_df['country'] == country, ["longmin", "latmin", "longmax" , "latmax"]].to_dict(orient='list')
-    # print(f"{bounds}")
     return bounds
 
+def get_country_bounds_2(country_name):
+    # https://github.com/graydon/country-bounding-boxes
+    country_code = pycountry.countries.get(name=country_name).alpha_2
+    print(f"country code {country_code}")
+    bounds = [c.bbox for c in country_subunits_by_iso_code(country_code)][0]
+    print(f" bounds {bounds}")
+    bounds = {'longmin':bounds[0], 'latmin':bounds[1],'longmax':bounds[2], 'latmax':bounds[3]}
+    return bounds
  
-# ===========================
-#  TESTING
-# ===========================
-if __name__ == '__main__':
+def get_country_to_file( country_name, lat_res, lon_res):
     # canada_lat=51.46101274654594;canada_lon=-68.94873314654009
     # get_data(lat=canada_lat, lon=canada_lon)
     # sea_lat = 51.826318646480345; sea_lon= -30.42353091277193
     # get_data(lat=sea_lat, lon=sea_lon)
-
-    bounds = get_country_bounds(country='Netherlands')
+    
+    bounds = get_country_bounds_2(country_name=country_name)
+    print(f" {country_name} bounds {bounds} ")
+    
 #     get_data(lat=51.4231,lon=5.4623)
-    for lon in np.linspace(bounds['longmin'][0],bounds['longmax'][0], 10 ):
-        # print(f"{lon:.5}")
-        # lon = (bounds['longmin'][0] + bounds['longmax'][0]) / 2
-        lat = (bounds['latmin'][0] + bounds['latmax'][0]) / 2
-        loc_data = get_location_data(lat = lat, lon = lon)
-        print(loc_data)
-        time.sleep(0.1) # do not flood the web(and get blocked)
+    country_data = []
+    for lat in np.linspace(bounds['latmin'],bounds['latmax'], lat_res ):
+        for lon in np.linspace(bounds['longmin'],bounds['longmax'], lon_res ):
+            # print(f"{lon:.5}")
+            # lon = (bounds['longmin'][0] + bounds['longmax'][0]) / 2
+            # lat = (bounds['latmin'][0] + bounds['latmax'][0]) / 2
+            loc_data = get_location_data(lat = lat, lon = lon)
+            country_data.append(loc_data)
+            print(loc_data)
+            time.sleep(0.1) # do not flood the web(and get blocked)
+    country_data_json = json.dumps(country_data)
+    with open(f"country_data_{country_name}.json", "w") as outfile:
+        outfile.write(country_data_json)
 
+def load_country_from_file(country_name):
+    with open(f"country_data_{country_name}.json", "r") as outfile:
+        country_data_json = outfile.read()
+    country_data = json.loads(country_data_json)
+    return country_data
 
+# ===========================
+#  TESTING
+# ===========================
+if __name__ == '__main__':
+    country = 'Netherlands'
+    get_country_to_file(country_name=country, lat_res=50, lon_res=50)
+
+    data = load_country_from_file(country)
+    import matplotlib.cm as cm
+    import matplotlib.pyplot as plt
+    lat = []
+    lon = []
+    el = []
+    for d in data:
+        if d['country_code']=='nl':
+            lat.append(d['lat'])
+            lon.append(d['lon'])
+            el.append(d['elevation'])
+    y = np.array(lat)
+    x = np.array(lon)
+    z = np.array(el)
+    
+    f, ax = plt.subplots(1,2, sharex=True, sharey=True)
+    ax[0].tripcolor(x,y,z)
+    ax[1].tricontourf(x,y,z, 20) # choose 20 contour levels, just to show how good its interpolation is
+    ax[1].plot(x,y, 'ko ')
+    ax[0].plot(x,y, 'ko ')
+    plt.show()
