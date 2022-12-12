@@ -111,7 +111,7 @@ def load_country_from_file(country_name):
 # ===========================
 if __name__ == '__main__':
     country = 'Netherlands'
-    get_country_to_file(country_name=country, lat_res=50, lon_res=50)
+    # get_country_to_file(country_name=country, lat_res=50, lon_res=50)
 
     data = load_country_from_file(country)
     import matplotlib.cm as cm
@@ -120,10 +120,11 @@ if __name__ == '__main__':
     lon = []
     el = []
     for d in data:
-        if d['country_code']=='nl':
-            lat.append(d['lat'])
-            lon.append(d['lon'])
-            el.append(d['elevation'])
+        if 'country_code' in d:
+            if d['country_code']=='nl':
+                lat.append(d['lat'])
+                lon.append(d['lon'])
+                el.append(d['elevation'])
     y = np.array(lat)
     x = np.array(lon)
     z = np.array(el)
