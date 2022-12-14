@@ -21,6 +21,7 @@ import pycountry
 def get_location_data(lat, lon):
     result = {'lat' : lat, 'lon' : lon }
     height_data_get_string = f'https://api.open-elevation.com/api/v1/lookup?locations={lat:.5},{lon:.5}'
+    # https://api.open-elevation.com/api/v1/lookup?locations=https://api.open-elevation.com/api/v1/lookup?locations=57.688709,11.976404|57.688709,11.976404
     # print(height_data_get_string)
     height_data_json = requests.get(height_data_get_string)
     # print(height_data_json.status_code)
@@ -35,7 +36,12 @@ def get_location_data(lat, lon):
     reverse_location_data_json = requests.get(get_string_reverse_gecode)
     # print(reverse_location_data_json.status_code)
     # print(reverse_location_data_json.text)
-    reverse_location_data = json.loads(reverse_location_data_json.text)
+    try:
+        reverse_location_data = json.loads(reverse_location_data_json.text)
+    except:
+        print(get_string_reverse_gecode)
+        print(reverse_location_data_json)
+        quit()
     # print(reverse_location_data)
     if 'error' in reverse_location_data :
         result['error'] = 'error in reverse geolocation'
@@ -60,12 +66,13 @@ def get_location_data(lat, lon):
         
     return result
 
-def get_country_bounds(country):
+# this one sucks, ignores
+# def get_country_bounds(country):
 
-    # # reading the CSV file
-    country_bound_df = pandas.read_csv('data/country-boundingboxes.csv')
-    bounds = country_bound_df.loc[country_bound_df['country'] == country, ["longmin", "latmin", "longmax" , "latmax"]].to_dict(orient='list')
-    return bounds
+#     # # reading the CSV file
+#     country_bound_df = pandas.read_csv('data/country-boundingboxes.csv')
+#     bounds = country_bound_df.loc[country_bound_df['country'] == country, ["longmin", "latmin", "longmax" , "latmax"]].to_dict(orient='list')
+#     return bounds
 
 def get_country_bounds_2(country_name):
     # https://github.com/graydon/country-bounding-boxes
@@ -106,32 +113,61 @@ def load_country_from_file(country_name):
     country_data = json.loads(country_data_json)
     return country_data
 
+def gritify(data):
+    lat = []
+    lon = []
+    el = []
+    for d in data:
+        lat.append(d['lat'])
+        lon.append(d['lon'])
+        el.append(d['elevation'])    
+    uniqlat = set(lat)
+    uniqlon = set(lon)
+    data = np.nan * np.ones((len(uniqlat), len( uniqlon )))
+    lat_to_index = {l: i for i,l in enumerate(reversed(sorted(uniqlat)))}
+    lon_to_index = {l: i for i,l in enumerate(sorted(uniqlon))}
+    print(lat_to_index)
+    print(lon_to_index)
+    for la, lo, e in zip(lat, lon, el):
+        data[lat_to_index[la], lon_to_index[lo]] = e
+    return data
+
+
 # ===========================
 #  TESTING
 # ===========================
 if __name__ == '__main__':
-    country = 'Netherlands'
-    # get_country_to_file(country_name=country, lat_res=50, lon_res=50)
+    country_name = 'Netherlands'
+    country_code = pycountry.countries.get(name=country_name).alpha_2
+    get_country_to_file(country_name=country_name, lat_res=500, lon_res=500)
+    quit()
 
-    data = load_country_from_file(country)
+    data = load_country_from_file(country_name)
+
     import matplotlib.cm as cm
     import matplotlib.pyplot as plt
     lat = []
     lon = []
     el = []
-    for d in data:
-        if 'country_code' in d:
-            if d['country_code']=='nl':
-                lat.append(d['lat'])
-                lon.append(d['lon'])
-                el.append(d['elevation'])
-    y = np.array(lat)
-    x = np.array(lon)
-    z = np.array(el)
-    
-    f, ax = plt.subplots(1,2, sharex=True, sharey=True)
-    ax[0].tripcolor(x,y,z)
-    ax[1].tricontourf(x,y,z, 20) # choose 20 contour levels, just to show how good its interpolation is
-    ax[1].plot(x,y, 'ko ')
-    ax[0].plot(x,y, 'ko ')
+    nederland = [d for d in data if ('country_code' in d) and (d['country_code'] == 'nl')]
+    grid = gritify(nederland)
+
+    plt.imshow(grid)
     plt.show()
+
+    # for d in data:
+    #     if 'country_code' in d:
+    #         if d['country_code']=='nl':
+    #             lat.append(d['lat'])
+    #             lon.append(d['lon'])
+    #             el.append(d['elevation'])
+    # y = np.array(lat)
+    # x = np.array(lon)
+    # z = np.array(el)
+    
+    # f, ax = plt.subplots(1,2, sharex=True, sharey=True)
+    # ax[0].tripcolor(x,y,z)
+    # ax[1].tricontourf(x,y,z, 20) # choose 20 contour levels, just to show how good its interpolation is
+    # ax[1].plot(x,y, 'ko ')
+    # ax[0].plot(x,y, 'ko ')
+    # plt.show()
